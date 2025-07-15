@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package messenger.auth;
+
+option go_package = "github.com/TemaKut/messenger-service-proto/gen/go/auth";
+
+message User {
+  string id = 1;
+  string name = 2;
+  string last_name = 3;
+}
