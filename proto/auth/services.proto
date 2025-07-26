@@ -3,20 +3,40 @@ syntax = "proto3";
 package messenger.auth;
 
 import "auth/user.proto";
+import "auth/auth.proto";
 
 option go_package = "github.com/TemaKut/messenger-service-proto/gen/go/auth";
 
 service UserAPI {
-  rpc UserRegister(UserAPIUserRegisterRequest) returns (UserAPIUserRegisterResponse);
+  rpc Register(UserAPIRegisterRequest) returns (UserAPIRegisterResponse);
+  rpc Authorize(UserAPIAuthorizeRequest) returns (UserAPIAuthorizeResponse);
 }
 
-message UserAPIUserRegisterRequest {
+message UserAPIRegisterRequest {
   string name = 1;
   string last_name = 2;
   string email = 3;
   string password = 4;
 }
 
-message UserAPIUserRegisterResponse {
+message UserAPIRegisterResponse {
   User user = 1;
+}
+
+message UserAPIAuthorizeRequest {
+  oneof credentials {
+    UserAPIAuthorizeEmailCredentials email = 1;
+  }
+
+  reserved 2 to 5;
+}
+
+message UserAPIAuthorizeEmailCredentials {
+  string email = 1;
+  string password = 2;
+}
+
+message UserAPIAuthorizeResponse {
+  User user = 1;
+  AuthParams auth_params = 2;
 }

@@ -19,14 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserAPI_UserRegister_FullMethodName = "/messenger.auth.UserAPI/UserRegister"
+	UserAPI_Register_FullMethodName  = "/messenger.auth.UserAPI/Register"
+	UserAPI_Authorize_FullMethodName = "/messenger.auth.UserAPI/Authorize"
 )
 
 // UserAPIClient is the client API for UserAPI service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserAPIClient interface {
-	UserRegister(ctx context.Context, in *UserAPIUserRegisterRequest, opts ...grpc.CallOption) (*UserAPIUserRegisterResponse, error)
+	Register(ctx context.Context, in *UserAPIRegisterRequest, opts ...grpc.CallOption) (*UserAPIRegisterResponse, error)
+	Authorize(ctx context.Context, in *UserAPIAuthorizeRequest, opts ...grpc.CallOption) (*UserAPIAuthorizeResponse, error)
 }
 
 type userAPIClient struct {
@@ -37,10 +39,20 @@ func NewUserAPIClient(cc grpc.ClientConnInterface) UserAPIClient {
 	return &userAPIClient{cc}
 }
 
-func (c *userAPIClient) UserRegister(ctx context.Context, in *UserAPIUserRegisterRequest, opts ...grpc.CallOption) (*UserAPIUserRegisterResponse, error) {
+func (c *userAPIClient) Register(ctx context.Context, in *UserAPIRegisterRequest, opts ...grpc.CallOption) (*UserAPIRegisterResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UserAPIUserRegisterResponse)
-	err := c.cc.Invoke(ctx, UserAPI_UserRegister_FullMethodName, in, out, cOpts...)
+	out := new(UserAPIRegisterResponse)
+	err := c.cc.Invoke(ctx, UserAPI_Register_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userAPIClient) Authorize(ctx context.Context, in *UserAPIAuthorizeRequest, opts ...grpc.CallOption) (*UserAPIAuthorizeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UserAPIAuthorizeResponse)
+	err := c.cc.Invoke(ctx, UserAPI_Authorize_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +63,8 @@ func (c *userAPIClient) UserRegister(ctx context.Context, in *UserAPIUserRegiste
 // All implementations must embed UnimplementedUserAPIServer
 // for forward compatibility.
 type UserAPIServer interface {
-	UserRegister(context.Context, *UserAPIUserRegisterRequest) (*UserAPIUserRegisterResponse, error)
+	Register(context.Context, *UserAPIRegisterRequest) (*UserAPIRegisterResponse, error)
+	Authorize(context.Context, *UserAPIAuthorizeRequest) (*UserAPIAuthorizeResponse, error)
 	mustEmbedUnimplementedUserAPIServer()
 }
 
@@ -62,8 +75,11 @@ type UserAPIServer interface {
 // pointer dereference when methods are called.
 type UnimplementedUserAPIServer struct{}
 
-func (UnimplementedUserAPIServer) UserRegister(context.Context, *UserAPIUserRegisterRequest) (*UserAPIUserRegisterResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UserRegister not implemented")
+func (UnimplementedUserAPIServer) Register(context.Context, *UserAPIRegisterRequest) (*UserAPIRegisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
+}
+func (UnimplementedUserAPIServer) Authorize(context.Context, *UserAPIAuthorizeRequest) (*UserAPIAuthorizeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Authorize not implemented")
 }
 func (UnimplementedUserAPIServer) mustEmbedUnimplementedUserAPIServer() {}
 func (UnimplementedUserAPIServer) testEmbeddedByValue()                 {}
@@ -86,20 +102,38 @@ func RegisterUserAPIServer(s grpc.ServiceRegistrar, srv UserAPIServer) {
 	s.RegisterService(&UserAPI_ServiceDesc, srv)
 }
 
-func _UserAPI_UserRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserAPIUserRegisterRequest)
+func _UserAPI_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserAPIRegisterRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserAPIServer).UserRegister(ctx, in)
+		return srv.(UserAPIServer).Register(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserAPI_UserRegister_FullMethodName,
+		FullMethod: UserAPI_Register_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserAPIServer).UserRegister(ctx, req.(*UserAPIUserRegisterRequest))
+		return srv.(UserAPIServer).Register(ctx, req.(*UserAPIRegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserAPI_Authorize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserAPIAuthorizeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserAPIServer).Authorize(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserAPI_Authorize_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserAPIServer).Authorize(ctx, req.(*UserAPIAuthorizeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -112,8 +146,12 @@ var UserAPI_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*UserAPIServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "UserRegister",
-			Handler:    _UserAPI_UserRegister_Handler,
+			MethodName: "Register",
+			Handler:    _UserAPI_Register_Handler,
+		},
+		{
+			MethodName: "Authorize",
+			Handler:    _UserAPI_Authorize_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
